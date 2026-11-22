@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Batalha de Heróis — Arena Edition (Online 1v1)</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- ==================== TELA INICIAL ==================== -->
+    <section id="screen-home" class="screen active">
+      <canvas id="home-bg-canvas"></canvas>
+      <div class="home-frame">
+        <div class="home-content">
+          <span class="badge-gold">UFRPE • UAST • EDIÇÃO ESPECIAL DE ARENA</span>
+          <h1 class="hero-title">BATALHA DE HERÓIS</h1>
+          <p class="hero-subtitle">Monte seu esquadrão, domine golpes especiais e desafie seu amigo online!</p>
+          <div id="home-roster-status" class="roster-pill">● Elenco pronto para combate: 3 Heróis e 3 Vilões</div>
+
+          <div class="home-buttons">
+            <button id="btn-go-online" class="btn btn-gold btn-lg">🌐 &nbsp;JOGAR ONLINE 1v1 (COM AMIGO)</button>
+            <button id="btn-go-select" class="btn btn-villain btn-lg">⚔ &nbsp;BATALHA LOCAL (VS IA)</button>
+            <button id="btn-go-register" class="btn btn-hero btn-lg">✚ &nbsp;CADASTRAR PERSONAGEM</button>
+            <button id="btn-go-roster" class="btn btn-indigo btn-lg">★ &nbsp;VER ELENCO DE LUTADORES</button>
+          </div>
+        </div>
+        <footer class="home-footer">
+          Desenvolvido por Natanael Santos &amp; Samuel Siqueira • Arena Edition Web
+        </footer>
+      </div>
+    </section>
+
+    <!-- ==================== TELA MULTIPLAYER ONLINE 1v1 ==================== -->
+    <section id="screen-online" class="screen">
+      <header class="topbar">
+        <button class="btn btn-slate btn-sm" data-nav="screen-home">← VOLTAR</button>
+        <h2>ARENA ONLINE 1v1 • JOGUE COM SEU AMIGO</h2>
+        <div class="topbar-spacer"></div>
+      </header>
+
+      <div class="online-grid">
+        <!-- LADO 1: CRIAR SALA (HOST - HERÓI) -->
+        <div class="card card-hero">
+          <div class="card-tag text-hero">ANFITRIÃO • LADO DO HERÓI</div>
+          <h3>Criar Nova Sala</h3>
+          <p class="muted">Gere um código de sala e envie para seu amigo entrar pelo navegador dele.</p>
+
+          <label class="field-label" for="online-host-hero">Escolha seu Herói:</label>
+          <select id="online-host-hero" class="select-input"></select>
+
+          <div class="room-box">
+            <span class="room-label">CÓDIGO DA SALA</span>
+            <div id="host-room-code" class="room-code">----</div>
+            <div id="host-status" class="status-text">Clique abaixo para abrir a sala</div>
+          </div>
+
+          <div class="btn-row">
+            <button id="btn-create-room" class="btn btn-hero">🚀 CRIAR SALA</button>
+            <button id="btn-copy-link" class="btn btn-slate" disabled>🔗 COPIAR LINK</button>
+          </div>
+        </div>
+
+        <!-- LADO 2: ENTRAR NA SALA (CONVIDADO - VILÃO) -->
+        <div class="card card-villain">
+          <div class="card-tag text-villain">DESAFIANTE • LADO DO VILÃO</div>
+          <h3>Entrar na Sala do Amigo</h3>
+          <p class="muted">Digite o código de 4 dígitos enviado pelo seu amigo para iniciar o duelo.</p>
+
+          <label class="field-label" for="online-guest-villain">Escolha seu Vilão:</label>
+          <select id="online-guest-villain" class="select-input"></select>
+
+          <label class="field-label" for="guest-room-input">Código da Sala:</label>
+          <input id="guest-room-input" class="text-input code-input" type="text" maxlength="6" placeholder="Ex: 4829" />
+
+          <div id="guest-status" class="status-text">Aguardando código da sala...</div>
+
+          <div class="btn-row">
+            <button id="btn-join-room" class="btn btn-villain">⚡ CONECTAR E LUTAR</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="online-tip">
+        💡 <strong>Como funciona:</strong> Ambos abrem o mesmo link do GitHub Pages. Você cria a sala (controla o <strong>Herói</strong>) e seu amigo entra com o código (controla o <strong>Vilão</strong>) em turnos alternados ao vivo!
+      </div>
+    </section>
+
+    <!-- ==================== TELA CADASTRO ==================== -->
+    <section id="screen-register" class="screen">
+      <header class="topbar">
+        <button class="btn btn-slate btn-sm" data-nav="screen-home">← VOLTAR</button>
+        <h2>CRIAR NOVO LUTADOR</h2>
+        <div class="topbar-spacer"></div>
+      </header>
+
+      <div class="two-col-grid">
+        <form id="register-form" class="card">
+          <div class="form-group">
+            <label class="field-label" for="reg-category">Categoria</label>
+            <select id="reg-category" class="select-input">
+              <option value="HEROI">Herói / Heroína</option>
+              <option value="VILAO">Vilão / Vilã</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="field-label" for="reg-name">Nome do Personagem</label>
+            <input id="reg-name" class="text-input" type="text" maxlength="24" placeholder="Ex: Guardião Estelar" required />
+          </div>
+
+          <div class="form-group">
+            <label class="field-label" for="reg-gender">Gênero</label>
+            <select id="reg-gender" class="select-input">
+              <option value="MASCULINO">Masculino</option>
+              <option value="FEMININO">Feminino</option>
+              <option value="OUTRO">Outro</option>
+              <option value="NAO_INFORMAR">Prefiro não informar</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div class="slider-header">
+              <label class="field-label" for="reg-hp">Vida Máxima</label>
+              <span id="val-hp" class="mono text-green">120 HP</span>
+            </div>
+            <input id="reg-hp" type="range" min="50" max="250" value="120" class="slider slider-green" />
+          </div>
+
+          <div class="form-group">
+            <div class="slider-header">
+              <label class="field-label" for="reg-atk">Poder de Ataque</label>
+              <span id="val-atk" class="mono text-villain">32 ATK</span>
+            </div>
+            <input id="reg-atk" type="range" min="10" max="80" value="32" class="slider slider-villain" />
+          </div>
+
+          <div class="form-group">
+            <div class="slider-header">
+              <label class="field-label" for="reg-def">Defesa</label>
+              <span id="val-def" class="mono text-hero">12 DEF</span>
+            </div>
+            <input id="reg-def" type="range" min="0" max="50" value="12" class="slider slider-hero" />
+          </div>
+
+          <button type="submit" class="btn btn-green btn-full">✔ &nbsp;SALVAR NO ELENCO</button>
+        </form>
+
+        <div id="preview-card" class="card card-hero preview-panel">
+          <span class="preview-caption">PRÉ-VISUALIZAÇÃO DO CARD</span>
+          <div id="prev-category" class="preview-cat text-hero">★ HERÓI ★</div>
+          <div id="prev-name" class="preview-name">Novo Lutador</div>
+          <div id="prev-gender" class="muted">Gênero: Masculino</div>
+
+          <div class="preview-bars">
+            <div class="bar-block">
+              <div class="bar-label"><span>VIDA MÁXIMA</span><span id="prev-hp-txt" class="mono">120 / 250</span></div>
+              <div class="progress-track"><div id="prev-hp-bar" class="progress-fill bg-green" style="width: 48%"></div></div>
+            </div>
+            <div class="bar-block">
+              <div class="bar-label"><span>ATAQUE</span><span id="prev-atk-txt" class="mono">32 / 80</span></div>
+              <div class="progress-track"><div id="prev-atk-bar" class="progress-fill bg-villain" style="width: 40%"></div></div>
+            </div>
+            <div class="bar-block">
+              <div class="bar-label"><span>DEFESA</span><span id="prev-def-txt" class="mono">12 / 50</span></div>
+              <div class="progress-track"><div id="prev-def-bar" class="progress-fill bg-hero" style="width: 24%"></div></div>
+            </div>
+          </div>
+
+          <div id="prev-rank" class="preview-rank text-gold">Classificação: ★★ ELITE</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA ELENCO ==================== -->
+    <section id="screen-roster" class="screen">
+      <header class="topbar">
+        <button class="btn btn-slate btn-sm" data-nav="screen-home">← VOLTAR</button>
+        <h2>ELENCO DE LUTADORES</h2>
+        <button class="btn btn-hero btn-sm" data-nav="screen-register">✚ NOVO</button>
+      </header>
+
+      <div class="two-col-grid roster-columns">
+        <div class="card card-hero roster-col">
+          <h3 class="text-hero center">HERÓIS E HEROÍNAS</h3>
+          <div id="roster-heroes-list" class="roster-list"></div>
+        </div>
+        <div class="card card-villain roster-col">
+          <h3 class="text-villain center">VILÕES E VILÃS</h3>
+          <div id="roster-villains-list" class="roster-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA SELEÇÃO DE BATALHA (LOCAL) ==================== -->
+    <section id="screen-select" class="screen">
+      <header class="topbar">
+        <button class="btn btn-slate btn-sm" data-nav="screen-home">← VOLTAR</button>
+        <h2>ESCOLHA OS COMBATENTES</h2>
+        <div class="topbar-spacer"></div>
+      </header>
+
+      <div class="two-col-grid">
+        <div class="card card-hero select-card">
+          <h3 class="text-hero center">LADO DO BEM • HERÓI</h3>
+          <select id="select-hero" class="select-input"></select>
+          <div id="select-hero-details" class="fighter-sheet"></div>
+        </div>
+
+        <div class="card card-villain select-card">
+          <h3 class="text-villain center">LADO DO CAOS • VILÃO</h3>
+          <select id="select-villain" class="select-input"></select>
+          <div id="select-villain-details" class="fighter-sheet"></div>
+        </div>
+      </div>
+
+      <div class="bottom-action">
+        <button id="btn-to-versus" class="btn btn-gold btn-lg">⚡ &nbsp;ENCARAR NA ARENA (VERSUS)</button>
+      </div>
+    </section>
+
+    <!-- ==================== TELA VERSUS ==================== -->
+    <section id="screen-versus" class="screen">
+      <div class="versus-bg">
+        <div class="versus-header">CONFRONTO DEFINIDO • MELHOR DE 3 RODADAS</div>
+        <div class="versus-stage">
+          <div id="vs-card-hero" class="vs-card card-hero"></div>
+          <div class="vs-emblem">VS</div>
+          <div id="vs-card-villain" class="vs-card card-villain"></div>
+        </div>
+        <div class="versus-footer">
+          <button id="btn-start-fight" class="btn btn-villain btn-lg">🔥 &nbsp;COMEÇAR COMBATE!</button>
+          <div id="vs-wait-msg" class="muted hidden">Aguardando o anfitrião iniciar a luta...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA ARENA ==================== -->
+    <section id="screen-arena" class="screen">
+      <header class="arena-topbar">
+        <button id="btn-leave-arena" class="btn btn-slate btn-sm">✕ SAIR</button>
+
+        <div class="arena-scoreboard">
+          <span id="arena-round" class="text-gold">RODADA 1 / 3</span>
+          <span id="arena-score">HERÓI ☆ ☆ 0 x 0 ☆ ☆ VILÃO</span>
+        </div>
+
+        <div class="arena-controls">
+          <div id="emote-bar" class="emote-bar hidden">
+            <button class="emote-btn" data-emote="🔥 Boa!">🔥</button>
+            <button class="emote-btn" data-emote="😱 Eita!">😱</button>
+            <button class="emote-btn" data-emote="⚡ Toma essa!">⚡</button>
+            <button class="emote-btn" data-emote="👑 GG!">👑</button>
+          </div>
+          <button id="btn-mode" class="btn btn-green btn-sm">🎮 MANUAL</button>
+          <button id="btn-speed" class="btn btn-indigo btn-sm">⏩ 1x</button>
+          <button id="btn-sound" class="btn btn-slate btn-sm">🔊</button>
+        </div>
+      </header>
+
+      <div class="arena-canvas-wrap">
+        <canvas id="arena-canvas"></canvas>
+      </div>
+
+      <div class="arena-bottom">
+        <div class="moves-panel">
+          <div id="moves-instruction" class="moves-instruction">ESCOLHA SEU GOLPE NA SUA VEZ DE ATACAR:</div>
+          <div id="moves-grid" class="moves-grid"></div>
+        </div>
+
+        <div class="log-panel">
+          <div class="log-header">HISTÓRICO DO COMBATE</div>
+          <div id="combat-log" class="combat-log"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA VITÓRIA ==================== -->
+    <section id="screen-victory" class="screen">
+      <canvas id="confetti-canvas"></canvas>
+      <div class="victory-wrap">
+        <div class="card card-gold victory-card">
+          <div class="trophy-icon">🏆</div>
+          <div class="victory-sub text-gold">GRANDE CAMPEÃO DO COMBATE</div>
+          <div id="vic-category" class="victory-cat text-hero">★ HERÓI ★</div>
+          <div id="vic-name" class="victory-name">SOLARIUS</div>
+          <div id="vic-score" class="victory-score">Placar Final: Solarius 2 x 1 Malakor</div>
+          <div id="vic-stats" class="victory-stats"></div>
+
+          <div class="victory-actions">
+            <button id="btn-rematch" class="btn btn-villain">🔄 &nbsp;REVANCHE IMEDIATA</button>
+            <button id="btn-new-battle" class="btn btn-hero">⚔ &nbsp;NOVA BATALHA</button>
+            <button id="btn-vic-home" class="btn btn-slate">🏠 &nbsp;MENU INICIAL</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
