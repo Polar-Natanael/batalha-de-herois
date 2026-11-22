@@ -92,6 +92,7 @@ const match = {
   vencedorAnterior: null, // 'HEROI' | 'VILAO' | null
   turnoAtual: null,       // 'HEROI' | 'VILAO'
   aguardandoInput: false,
+  aguardandoRemoto: false,
   modoManual: true,
   rapido: false,
   totalGolpes: 0,
@@ -408,7 +409,7 @@ document.getElementById('btn-create-room').addEventListener('click', () => {
   document.getElementById('host-room-code').textContent = code;
   document.getElementById('host-status').textContent = 'Conectando servidor de sinalização...';
 
-  const peer = new Peer(PEER_PREFIX + code);
+  const peer = new Peer(PEER_PREFIX + code, { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
   net.peer = peer;
 
   peer.on('open', () => {
@@ -452,7 +453,7 @@ document.getElementById('btn-join-room').addEventListener('click', () => {
   encerrarConexaoOnline();
   document.getElementById('guest-status').textContent = 'Conectando à sala ' + rawCode + '...';
 
-  const peer = new Peer();
+  const peer = new Peer({ config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
   net.peer = peer;
 
   peer.on('open', () => {
@@ -508,8 +509,8 @@ function processarMensagemRede(msg) {
     aplicarIniciativaRodada(msg.iniciador, msg.comRoleta);
   } else if (msg.type === 'REQUEST_MOVE' && match.role === 'HOST') {
     // O convidado (Vilão) escolheu um golpe; o Host valida, rola o multiplicador e devolve o resultado exato
-    if (match.turnoAtual === 'VILAO' && match.aguardandoInput) {
-      match.aguardandoInput = false;
+    if (match.turnoAtual === 'VILAO' && match.aguardandoRemoto) {
+      match.aguardandoRemoto = false;
       const golpe = match.vilao.golpes[msg.moveIndex] || match.vilao.golpes[0];
       resolverGolpeAutoritativo('VILAO', msg.moveIndex, golpe);
     }
@@ -1042,6 +1043,7 @@ function iniciarSerieCombate() {
   match.maiorDano = 0;
   match.autorMaiorDano = '-';
   match.aguardandoInput = false;
+  match.aguardandoRemoto = false;
 
   const btnMode = document.getElementById('btn-mode');
   const emoteBar = document.getElementById('emote-bar');
@@ -1138,6 +1140,7 @@ function iniciarTurno(lado) {
 
   if (ehMeuTurnoLocal) {
     match.aguardandoInput = true;
+    match.aguardandoRemoto = false;
     const cor = lado === 'HEROI' ? '#38bdf8' : '#f43f5e';
     ArenaEngine.definirBanner('SUA VEZ! ESCOLHA UM GOLPE ABAIXO', cor);
     renderizarDeckGolpes(true);
@@ -1146,6 +1149,9 @@ function iniciarTurno(lado) {
     renderizarDeckGolpes(false);
 
     if (match.online) {
+      if (match.role === 'HOST' && lado === 'VILAO') {
+        match.aguardandoRemoto = true;
+      }
       const oponente = lado === 'HEROI' ? match.heroi : match.vilao;
       ArenaEngine.definirBanner(`AGUARDANDO GOLPE DE ${oponente.nome.toUpperCase()}...`, '#facc15');
     } else {
